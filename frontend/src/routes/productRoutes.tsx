@@ -1,11 +1,11 @@
-import { NotFound } from "@/features/misc";
+import { Home, NotFound } from "@/features/misc";
 
 export const ProductRoutes = [
   {
     path: "/",
-    element: <NotFound />,
     children: [
-      { path: "/", element: <NotFound /> },
+      { path: "/", element: <Home /> },
+      { path: "*", element: <NotFound /> }
     ]
   }
 ];
