@@ -1,5 +1,7 @@
-import { db } from '@/lib/firebase';
+import { doc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+
+import { db } from '@/lib/firebase';
 
 // クッキーにユーザーIDを保存
 const setUserIdInCookie = (userId: string) => {
@@ -30,7 +32,17 @@ export const getOrCreateUserId = () : string => {
 // ユーザーのプレゼンスを追跡
 // TODO
 export const trackUserPresence =  (roomId: string, userId: string) => {
-  const userStatusRef = db.ref(`rooms/${roomId}/participants/${userId}/status`);
+  const userStatusRef = doc(db, 'rooms', roomId, 'participants', userId, 'status');
+  const newUserStatus = await runTransaction(db, async (transaction) => {
+    const userStatus = await transaction.get(userStatusRef);
+    if (!userStatus.exists()) {
+      transaction.set(userStatusRef, 'online');
+      return 'online';
+    }
+    return userStatus.data();
+  }
+
+
   userStatusRef.set('online');
   userStatusRef.onDisconnect().set('offline').then(() => {
     console.log('onDisconnect() set up complete');
