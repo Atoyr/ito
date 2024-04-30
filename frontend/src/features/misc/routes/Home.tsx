@@ -1,7 +1,19 @@
+import { useNavigate } from 'react-router-dom';
+
 import { Button, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
+import { createRoom } from '@/lib/ito';
+
+
 export const Home = () => {
+  const navigate = useNavigate();
+  const onStartButtonClick = () => {
+    createRoom().then((roomId) => {
+      navigate(`/room/${roomId}`);
+    });
+  };
+
   return (
   <Container>
     <Grid>
@@ -19,7 +31,7 @@ export const Home = () => {
         </Typography>
       </Grid>
       <Grid xs={12} style={{textAlign: "center"}}>
-        <Button variant="outlined" href="/" size="large">START</Button>
+        <Button variant="outlined" size="large" onClick={onStartButtonClick}>START</Button>
       </Grid>
       <Grid xs={12} style={{textAlign: "center"}}>
         <Button variant="outlined" href="/" size="large">JOIN</Button>
