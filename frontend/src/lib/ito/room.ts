@@ -10,42 +10,57 @@ import {
 
 import { db } from '@/lib/firebase';
 
-import { Room } from './types/room';
+import { RoomConverter, User, UserConverter } from './types';
 
+// 部屋を作成
 export const createRoom = async () => {
-  const roomRef = await addDoc(collection(db, "rooms"), {
+  const roomRef = collection(db, "rooms").withConverter(RoomConverter);
+  const room = await addDoc(roomRef, {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     status: "waiting",
-    participants: [],
   });
-
-  console.log("Room created with ID: ", roomRef.id);
-  return roomRef.id;
+  return room.id;
 }
 
-export const joinRoom = async (roomId: string) => {
-  const roomRef = doc(db, 'rooms', roomId);
-  const roomSnap = await getDoc(roomRef);
+// 部屋に参加する
+export const joinRoom = async (roomId: string, isOwner = false) => {
+  const roomSnap = await getRoomSnap(roomId);
   if (!roomSnap.exists()) {
-    console.log("No such room!");
-    return null;
+    throw new Error("No such room!");
   }
 
   const userId = getOrCreateUserId();
-  trackUserPresence(roomId, userId);
-  console.log(`User ${userId} joined room ${roomId}`);
+  const userRef = doc(db, 'rooms', roomId, 'participants', userId).withConverter(UserConverter);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+    return userDoc.data();
+  }
+
+  const user = {
+    id: userId,
+    isOnline: true, 
+    isOwner,
+  } as User;
+
+  await setDoc(userRef, user, { merge: true });
+  return (await getDoc(userRef)).data();
 };
 
-export const getRoomInfo = async (roomId: string) => {
-  const roomRef = doc(db, 'rooms', roomId);
-  const roomSnap = await getDoc(roomRef);
+export const getRoom = async (roomId: string) => {
+  const roomSnap = await getRoomSnap(roomId);
   if (!roomSnap.exists()) {
-    console.log("No such document!");
-    return null;
+    throw new Error("No such room!");
   }
   return roomSnap.data();
 }
+
+
+const getRoomSnap = async (roomId: string) => {
+  const roomRef = doc(db, 'rooms', roomId).withConverter(RoomConverter);
+  return await getDoc(roomRef);
+}
+
 
 
 // TODO
@@ -60,7 +75,7 @@ const listenToRoomParticipants = (roomId: string, changeUser: (id: string) => vo
 
 // クッキーにユーザーIDを保存
 const setUserIdInCookie = (userId: string) => {
-  document.cookie = `userId=${userId};path=/ito;max-age=2592000`; // 30日間有効
+  document.cookie = `userId=${userId};path=/;max-age=2592000`; // 30日間有効
 };
 
 // クッキーからユーザーIDを取得
@@ -71,7 +86,7 @@ const getUserIdFromCookie = () => {
   return null;
 }
 
-export const getOrCreateUserId = () : string => {
+const getOrCreateUserId = () : string => {
   const userId = getUserIdFromCookie();
   if (userId) {
     return userId;
@@ -83,13 +98,19 @@ export const getOrCreateUserId = () : string => {
   return newUserId;
 };
 
+const getUser = async (roomId: string, userId: string) => {
+  const userStatusRef = doc(db, 'rooms', roomId, 'participants', userId).withConverter(UserConverter);
+  const userStatusSnap = await getDoc(userStatusRef);
+  if (!userStatusSnap.exists()) {
+    throw new Error("No such user!");
+  }
+  return userStatusSnap.data();
+}
+
 
 // ユーザーのプレゼンスを追跡
 // TODO
 export const trackUserPresence =  (roomId: string, userId: string) => {
   const userStatusRef = doc(db, 'rooms', roomId, 'participants', userId);
-
-  setDoc(userStatusRef, { status: 'online' })
+  setDoc(userStatusRef, { id: userId, status: 'online' })
 }
-
-

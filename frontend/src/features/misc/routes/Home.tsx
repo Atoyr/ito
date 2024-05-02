@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import { createRoom } from '@/lib/ito';
+import { createRoom, joinRoom } from '@/lib/ito';
 
 
 export const Home = () => {
   const navigate = useNavigate();
   const onStartButtonClick = () => {
-    createRoom().then((roomId) => {
+    createRoom().then(async (roomId) => {
+      await joinRoom(roomId, true);
       navigate(`/room/${roomId}`);
     });
   };
