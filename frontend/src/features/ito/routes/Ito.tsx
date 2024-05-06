@@ -4,23 +4,24 @@ import { useParams } from 'react-router-dom';
 import { Button, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import { getRoom, getUsers, joinRoom } from '@/lib/ito';
+import { getRoom, joinRoom, updateUserName } from '@/lib/ito';
 import { Room, User } from '@/lib/ito/types';
+
+import { UserTile } from '../components';
+import { useFetchUsers } from '../hooks/useFetchUsers';
 
 export const Ito = () => {
 
   const { roomId } = useParams<"roomId">();
   const [room, setRoom] = useState<Room | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const users = useFetchUsers(roomId);
 
   useEffect(() => {
     if (roomId) {
       getRoom(roomId).then((room) => {
         setRoom(room);
-        joinRoom(roomId);
-        getUsers(roomId).then((users) => {
-          setUsers(users);
-        });
+        joinRoom(roomId).then((user) => { setUser(user ?? null);});
       });
     }
   }, [roomId]);
@@ -42,17 +43,12 @@ export const Ito = () => {
           Welcome to ito
         </Typography>
       </Grid>
-      {users.map((user) => (
-        <Grid xs={9} md={12}>
-          <Typography variant="h3" component="div" gutterBottom
-            sx={{
-              textAlign: "center",
-              my: 2,
-            }}>
-            {user.name}
-          </Typography>
-        </Grid>
-      ))}
+      {users.map((u) => {
+        return (
+          <UserTile key={u.id} user={u} myId={user?.id} onNameChange={(name) => { updateUserName(roomId ?? "", u.id, name)}} />
+        );
+
+      })}
 
     </Grid>
   </Container>
