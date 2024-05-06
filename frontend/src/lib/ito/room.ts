@@ -4,6 +4,7 @@ import {
   collection, 
   doc, 
   getDoc,
+  getDocs,
   setDoc, 
   onSnapshot, 
   serverTimestamp } from "firebase/firestore"; 
@@ -55,6 +56,11 @@ export const getRoom = async (roomId: string) => {
   return roomSnap.data();
 }
 
+export const getUsers = async (roomId: string) => {
+  const usersRef = collection(db, 'rooms', roomId, 'participants').withConverter(UserConverter);
+  const usersSnapshot = await getDocs(usersRef);
+  return usersSnapshot.docs.map(doc => doc.data());
+}
 
 const getRoomSnap = async (roomId: string) => {
   const roomRef = doc(db, 'rooms', roomId).withConverter(RoomConverter);

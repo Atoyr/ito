@@ -1,5 +1,6 @@
 import { 
   FirestoreDataConverter, 
+  serverTimestamp,
 } from 'firebase/firestore'
 
 export interface User {
@@ -15,14 +16,17 @@ export const UserConverter: FirestoreDataConverter<User> = {
       __type : 'user',
       id :user.id,
       name: user.name ?? 'unknown',
-      online: user.isOnline ?? false, 
       isOwner: user.isOwner ?? false,
+      lastActive: serverTimestamp(),
     };
   },
   fromFirestore: (snapshot) => {
     const data = snapshot.data();
     const user = {
-      ...data,
+      id: data.id,
+      name: data.name,
+      isOnline: true, // TODO HEART BEAT
+      isOwner : data.isOwner,
     } as User;
     return user;
   },

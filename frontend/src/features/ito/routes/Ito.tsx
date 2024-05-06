@@ -4,18 +4,23 @@ import { useParams } from 'react-router-dom';
 import { Button, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import { getRoom, joinRoom } from '@/lib/ito';
-import { Room } from '@/lib/ito/types';
+import { getRoom, getUsers, joinRoom } from '@/lib/ito';
+import { Room, User } from '@/lib/ito/types';
 
 export const Ito = () => {
 
   const { roomId } = useParams<"roomId">();
   const [room, setRoom] = useState<Room | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+
   useEffect(() => {
     if (roomId) {
       getRoom(roomId).then((room) => {
         setRoom(room);
         joinRoom(roomId);
+        getUsers(roomId).then((users) => {
+          setUsers(users);
+        });
       });
     }
   }, [roomId]);
@@ -37,12 +42,18 @@ export const Ito = () => {
           Welcome to ito
         </Typography>
       </Grid>
-      <Grid xs={12} style={{textAlign: "center"}}>
-        <Button variant="outlined" href="/" size="large">START</Button>
-      </Grid>
-      <Grid xs={12} style={{textAlign: "center"}}>
-        <Button variant="outlined" href="/" size="large">JOIN</Button>
-      </Grid>
+      {users.map((user) => (
+        <Grid xs={9} md={12}>
+          <Typography variant="h3" component="div" gutterBottom
+            sx={{
+              textAlign: "center",
+              my: 2,
+            }}>
+            {user.name}
+          </Typography>
+        </Grid>
+      ))}
+
     </Grid>
   </Container>
   );
