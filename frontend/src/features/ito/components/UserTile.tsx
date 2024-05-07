@@ -15,7 +15,7 @@ export const UserTile = (props: UserProps) => {
 
   const handleUpdateName = () => {
     const name = prompt("新しい名前を入力してください", user.name);
-    if (name) {
+    if (name && name !== "") {
       props.onNameChange(name);
     }
   }
