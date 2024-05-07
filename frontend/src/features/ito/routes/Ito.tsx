@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Button, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import { getRoom, joinRoom, updateUserName } from '@/lib/ito';
+import { getRoom, joinRoom, updateUserName, updateRoomStatus } from '@/lib/ito';
 import { Room, User } from '@/lib/ito/types';
 
 import { UserTile } from '../components';
@@ -26,6 +26,11 @@ export const Ito = () => {
     }
   }, [roomId]);
 
+  const gameStart = () => {
+    if (room) {
+      updateRoomStatus(roomId ?? "", "playing");
+    }
+  };
 
   return (
   <Container>
@@ -50,6 +55,15 @@ export const Ito = () => {
 
       })}
 
+      {user?.isOwner && (
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
+          onClick={gameStart}>
+          Start Game
+        </Button>)
+      }
     </Grid>
   </Container>
   );

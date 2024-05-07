@@ -3,11 +3,12 @@ import {
   collection, 
   doc, 
   getDoc,
+  updateDoc,
   serverTimestamp } from "firebase/firestore"; 
 
 import { db } from '@/lib/firebase';
 
-import { RoomConverter } from './types';
+import { RoomConverter, Status } from './types';
 
 // 部屋を作成
 export const createRoom = async () => {
@@ -20,15 +21,17 @@ export const createRoom = async () => {
   return room.id;
 }
 
+// 部屋を取得
 export const getRoom = async (roomId: string) => {
-  const roomSnap = await getRoomSnap(roomId);
+  const roomRef = doc(db, 'rooms', roomId).withConverter(RoomConverter);
+  const roomSnap = await getDoc(roomRef);
   if (!roomSnap.exists()) {
     throw new Error("No such room!");
   }
   return roomSnap.data();
 }
 
-const getRoomSnap = async (roomId: string) => {
+export const updateRoomStatus = async (roomId: string, status: Status) => {
   const roomRef = doc(db, 'rooms', roomId).withConverter(RoomConverter);
-  return await getDoc(roomRef);
+  await updateDoc(roomRef, { status, updatedAt: serverTimestamp() });
 }

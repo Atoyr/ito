@@ -3,12 +3,13 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 
-import { User } from './user';
+import { User } from './User';
+import { Status } from './Status';
 
 export interface Room {
   createdAt: Date;
   updatedAt: Date;
-  status: string;
+  status: Status;
 }
 
 export type OnUserChange = (user: User) => void;
