@@ -32,6 +32,18 @@ export const Ito = () => {
     }
   };
 
+  const panel = (status) => {
+    switch (status) {
+      case "waiting":
+        return (<Typography>Waiting</Typography>);
+      case "playing":
+        return (<Typography>Playing</Typography>);
+      default:
+        return (<Typography>Unknown</Typography>);
+    }
+
+  }
+
   return (
   <Container>
     <Grid>
@@ -64,9 +76,9 @@ export const Ito = () => {
           Start Game
         </Button>)
       }
+      {panel(room?.status)}
     </Grid>
   </Container>
   );
 }
-
 
