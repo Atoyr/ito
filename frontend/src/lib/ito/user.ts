@@ -20,6 +20,11 @@ export const joinRoom = async (roomId: string, isOwner = false) => {
     throw new Error("No such room!");
   }
 
+  // ゲーム中の部屋には参加できない
+  if (roomSnap.data().status !== 'waiting') {
+    throw new Error("The room is not available!");
+  }
+
   const userId = getOrCreateUserId();
   const userRef = doc(db, 'rooms', roomId, 'participants', userId).withConverter(UserConverter);
   const userDoc = await getDoc(userRef);
